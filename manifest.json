@@ -1,11 +1,10 @@
 {
-	"id": "cloudFlare-images",
-	"name": "cloudFlare-images",
-	"version": "0.1.0",
+	"id": "Cloudflare-images",
+	"name": "CloudFlare Images",
+	"version": "0.2.0",
 	"minAppVersion": "0.15.0",
-	"description": "when paste image on editor, upload to your cloudFlare images and get sharable image URL",
+	"description": "Automatically upload pasted or dropped images to CloudFlare Images and insert shareable markdown links into your notes",
 	"author": "Park Jae Wook",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
-	"isDesktopOnly": false
+	"authorUrl": "https://github.com/LeChuckbb",
+	"isDesktopOnly": true
 }
