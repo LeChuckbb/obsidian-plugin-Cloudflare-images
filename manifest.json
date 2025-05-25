@@ -3,7 +3,7 @@
 	"name": "cloudFlare-images",
 	"version": "0.1.0",
 	"minAppVersion": "0.15.0",
-	"description": "when paste image on editor, upload to cloudFlare images and get image URL",
+	"description": "when paste image on editor, upload to your cloudFlare images and get sharable image URL",
 	"author": "Park Jae Wook",
 	"authorUrl": "https://obsidian.md",
 	"fundingUrl": "https://obsidian.md/pricing",

@@ -1,16 +1,31 @@
-import {  Editor, Plugin, requestUrl, Notice } from 'obsidian';
-import * as dotenv from 'dotenv';
+import {  Editor, Plugin, requestUrl, Notice} from 'obsidian';
+import {CloudFlareImagesSettingTab} from "./settings";
 
-export default class MyPlugin extends Plugin {
+interface Settings {
+	token: string;
+	id: string;
+}
+
+const DEFAULT_SETTINGS : Settings= {
+	token: '',
+	id: '',
+}
+
+export default class CloudFlareImagesPlugin extends Plugin {
+	settings : Settings;
+
 	async onload() {
+		await this.loadSettings();
+
+		this.addSettingTab(new CloudFlareImagesSettingTab(this.app, this));
 		// 이미지 붙여넣기 이벤트 감지
 		this.registerEvent(
 			this.app.workspace.on('editor-paste',this.handlePaste.bind(this))
 		)
+		// 이미지 드래그앤드롭 이벤트 감지
 	}
 
-	onunload() {
-	}
+	onunload() {}
 
 	async handlePaste(evt: ClipboardEvent, editor: Editor){
 		const items = evt.clipboardData?.items;
@@ -28,29 +43,27 @@ export default class MyPlugin extends Plugin {
 						editor.replaceSelection(`![Image](${imageUrl})`);
 					} catch (error) {
 						// 에러 처리
-						new Notice(`이미지 업로드 실패: ${error.message}`, 5000);
-						console.error('Image upload failed:', error);
+						new Notice(`failed to upload image: ${error.message}`, 5000);
 					}
 				}
 			}
 		}
 	}
 
-
-
 	async uploadToCloudFlare(file:File){
-		const token = process.env["CLOUD_FLARE_TOKEN "];
-		const id = process.env["CLOUD_FLARE_ID "];
+		const token = this.settings.token;
+		const id = this.settings.id;
+		console.log(this.settings);
 
 		if(!token || !id){
-			console.error('환경변수 설정 오류');
+			console.error('setting error. check your token or id');
 			return;
 		}
 
 		const formData = new FormData();
 		formData.append('file', file);
 
-		const response = await requestUrl(
+		await requestUrl(
 			{
 				url:`https://api.cloudflare.com/client/v4/accounts/${id}/images/v2/direct_upload`,
 				method: "POST",
@@ -59,9 +72,19 @@ export default class MyPlugin extends Plugin {
 					Authorization: `Bearer ${token}`,
 				},
 			}
-		);
-		const result = JSON.parse(response.text).result;
-		await fetch(result.uploadURL,{body:formData, method:'post'})
-		return `https://imagedelivery.net/0ls7rUWRjBE8C2UFoz_eSw/${result.id}/post`
+		).then(async (res) => {
+			const result = JSON.parse(res.text).result;
+			await fetch(result.uploadURL,{body:formData, method:'post'})
+			return `https://imagedelivery.net/0ls7rUWRjBE8C2UFoz_eSw/${result.id}/post`
+		}).catch((error) => {
+			new Notice(`check your id or token : ${error.message}`, 5000);
+		});
+	}
+
+	async loadSettings() {
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+	}
+	async saveSettings() {
+		await this.saveData(this.settings);
 	}
 }
